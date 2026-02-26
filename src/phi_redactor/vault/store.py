@@ -107,6 +107,38 @@ class PhiVault:
         """Return the SHA-256 hex digest of *original*."""
         return hashlib.sha256(original.encode("utf-8")).hexdigest()
 
+    def ensure_session(self, session_id: str, provider: str = "unknown") -> None:
+        """Create a session row if one does not already exist.
+
+        This is called automatically by :meth:`store_mapping` so that vault
+        entries can be stored without requiring the caller to pre-create a
+        session via :meth:`create_session`.
+        """
+        now = datetime.now(timezone.utc)
+        expires = now + timedelta(hours=_DEFAULT_SESSION_LIFETIME_HOURS)
+        date_shift = random.randint(-365, 365)
+        age_shift = random.randint(-5, 5)
+
+        with self._conn:
+            self._conn.execute(
+                """
+                INSERT OR IGNORE INTO sessions
+                    (id, created_at, last_active_at, expires_at, provider,
+                     status, date_shift_offset_days, age_shift_offset_years)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    session_id,
+                    now.isoformat(),
+                    now.isoformat(),
+                    expires.isoformat(),
+                    provider,
+                    SessionStatus.ACTIVE.value,
+                    date_shift,
+                    age_shift,
+                ),
+            )
+
     def store_mapping(
         self,
         session_id: str,
@@ -117,8 +149,11 @@ class PhiVault:
         """Store an original-to-synthetic mapping (deduplicates by hash).
 
         If a mapping for the same *(session_id, original)* pair already
-        exists, the insertion is silently ignored.
+        exists, the insertion is silently ignored.  The session is
+        auto-created if it does not yet exist.
         """
+        self.ensure_session(session_id)
+
         original_hash = self._hash_original(original)
         encrypted = self._encryption.encrypt(original)
         now = datetime.now(timezone.utc).isoformat()

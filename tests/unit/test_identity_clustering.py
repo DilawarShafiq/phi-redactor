@@ -222,7 +222,7 @@ class TestProximityThreshold:
         """A detection placed more than _PROXIMITY_THRESHOLD chars away is NOT clustered."""
         name_text = "Patient Eve Morris"
         # Separate the name from the phone by more than the threshold.
-        gap = "." + ("b" * (_PROXIMITY_THRESHOLD + 200))
+        gap = ". " + ("B" + "b" * 99) * ((_PROXIMITY_THRESHOLD + 200) // 100)
         phone_text = "(555) 111-2222"
         text = name_text + gap + phone_text
 
