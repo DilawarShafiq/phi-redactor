@@ -17,10 +17,23 @@ import click
 
 @click.command("report")
 @click.option("--full", is_flag=True, help="Generate a full detailed compliance report.")
-@click.option("--output", "-o", type=click.Path(), default=None, help="Export report to a JSON file.")
+@click.option("--output", "-o", type=click.Path(), default=None, help="Export report to a file.")
 @click.option("--session", "-s", default=None, help="Filter by session ID.")
 @click.option("--from-date", default=None, help="Start date (ISO 8601) for the reporting period.")
 @click.option("--to-date", default=None, help="End date (ISO 8601) for the reporting period.")
+@click.option(
+    "--format",
+    "fmt",
+    type=click.Choice(["json", "md", "html"], case_sensitive=False),
+    default="json",
+    show_default=True,
+    help="Output format: json, md (Markdown), or html.",
+)
+@click.option(
+    "--safe-harbor",
+    is_flag=True,
+    help="Generate a full Safe Harbor attestation document (implies --full).",
+)
 @click.pass_context
 def cli_command(
     ctx: click.Context,
@@ -29,11 +42,17 @@ def cli_command(
     session: str | None,
     from_date: str | None,
     to_date: str | None,
+    fmt: str,
+    safe_harbor: bool,
 ) -> None:
     """Generate HIPAA Safe Harbor compliance reports."""
     from datetime import datetime
 
-    from phi_redactor.audit.reports import ComplianceReportGenerator
+    from phi_redactor.audit.reports import (
+        ComplianceReportGenerator,
+        render_html,
+        render_markdown,
+    )
     from phi_redactor.audit.trail import AuditTrail
 
     config = ctx.obj.get("config")
@@ -48,18 +67,14 @@ def cli_command(
     parsed_from = datetime.fromisoformat(from_date) if from_date else None
     parsed_to = datetime.fromisoformat(to_date) if to_date else None
 
-    if output:
-        # Export to file
-        path = generator.export_report(
-            output_path=output,
+    # --safe-harbor implies a full report with attestation
+    if safe_harbor:
+        report = generator.generate_safe_harbor(
             from_dt=parsed_from,
             to_dt=parsed_to,
             session_id=session,
         )
-        click.echo(f"Compliance report exported to: {path}")
-        return
-
-    if full:
+    elif full:
         report = generator.generate_report(
             from_dt=parsed_from,
             to_dt=parsed_to,
@@ -71,10 +86,30 @@ def cli_command(
             to_dt=parsed_to,
         )
 
-    if ctx.obj.get("json_output"):
-        click.echo(json.dumps(report, indent=2, default=str))
+    # Determine rendered content
+    if fmt == "json" or ctx.obj.get("json_output"):
+        content = json.dumps(report, indent=2, default=str)
+    elif fmt == "md":
+        content = render_markdown(report)
+    elif fmt == "html":
+        content = render_html(report)
     else:
-        _print_human_readable(report, full=full)
+        content = json.dumps(report, indent=2, default=str)
+
+    if output:
+        from pathlib import Path
+        out_path = Path(output).expanduser()
+        out_path.parent.mkdir(parents=True, exist_ok=True)
+        out_path.write_text(content, encoding="utf-8")
+        click.echo(f"Compliance report exported to: {out_path}")
+        return
+
+    if fmt == "json" or ctx.obj.get("json_output"):
+        click.echo(content)
+    elif fmt in ("md", "html"):
+        click.echo(content)
+    else:
+        _print_human_readable(report, full=full or safe_harbor)
 
 
 def _print_human_readable(report: dict, full: bool = False) -> None:

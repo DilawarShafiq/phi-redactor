@@ -211,6 +211,107 @@ async def compliance_report(
     return JSONResponse(content=report)
 
 
+@router.post("/reports/safe-harbor", summary="Generate a Safe Harbor attestation report file")
+async def generate_safe_harbor_report(
+    request: Request,
+    session_id: str | None = Query(default=None, description="Filter by session ID"),
+    from_dt: str | None = Query(
+        default=None,
+        alias="from",
+        description="Start datetime (ISO 8601)",
+    ),
+    to_dt: str | None = Query(
+        default=None,
+        alias="to",
+        description="End datetime (ISO 8601)",
+    ),
+    fmt: str = Query(
+        default="json",
+        alias="format",
+        description="Output format: json, md, or html",
+    ),
+) -> JSONResponse:
+    """Generate a HIPAA Safe Harbor attestation report and write it to a file.
+
+    Returns a ``report_id`` and the ``output_path`` of the written file.
+    """
+    import uuid
+    from pathlib import Path
+
+    from phi_redactor.audit.reports import (
+        ComplianceReportGenerator,
+        render_html,
+        render_markdown,
+    )
+
+    state = request.app.state
+    audit = state.audit_trail
+
+    parsed_from: datetime | None = None
+    parsed_to: datetime | None = None
+
+    if from_dt is not None:
+        try:
+            parsed_from = datetime.fromisoformat(from_dt)
+        except ValueError:
+            raise HTTPException(status_code=400, detail=f"Invalid 'from' datetime: {from_dt}")
+
+    if to_dt is not None:
+        try:
+            parsed_to = datetime.fromisoformat(to_dt)
+        except ValueError:
+            raise HTTPException(status_code=400, detail=f"Invalid 'to' datetime: {to_dt}")
+
+    valid_formats = {"json", "md", "html"}
+    if fmt not in valid_formats:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid format '{fmt}'. Must be one of: {', '.join(sorted(valid_formats))}",
+        )
+
+    generator = ComplianceReportGenerator(audit_trail=audit)
+    report = generator.generate_safe_harbor(
+        from_dt=parsed_from,
+        to_dt=parsed_to,
+        session_id=session_id,
+    )
+
+    report_id = str(uuid.uuid4())
+    ext = fmt if fmt != "md" else "md"
+
+    # Resolve output directory from app config when available, else use a temp dir.
+    try:
+        cfg = state.config
+        reports_dir = Path(cfg.audit_path).parent / "reports"
+    except AttributeError:
+        import tempfile
+        reports_dir = Path(tempfile.gettempdir()) / "phi-redactor" / "reports"
+
+    reports_dir.mkdir(parents=True, exist_ok=True)
+    output_path = reports_dir / f"safe-harbor-{report_id}.{ext}"
+
+    if fmt == "json":
+        import json as _json
+        output_path.write_text(_json.dumps(report, indent=2, default=str), encoding="utf-8")
+    elif fmt == "md":
+        output_path.write_text(render_markdown(report), encoding="utf-8")
+    elif fmt == "html":
+        output_path.write_text(render_html(report), encoding="utf-8")
+
+    logger.info("Safe Harbor report generated: report_id=%s path=%s", report_id, output_path)
+
+    return JSONResponse(
+        status_code=201,
+        content={
+            "report_id": report_id,
+            "output_path": str(output_path),
+            "format": fmt,
+            "session_filter": session_id,
+            "generated_at": datetime.utcnow().isoformat() + "Z",
+        },
+    )
+
+
 @router.get("/compliance/summary", summary="Quick compliance status check")
 async def compliance_summary(request: Request) -> JSONResponse:
     """Return a lightweight compliance summary for dashboards."""

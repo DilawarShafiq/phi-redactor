@@ -218,6 +218,50 @@ class PhiVault:
             row = self._conn.execute("SELECT COUNT(*) FROM vault_entries").fetchone()
         return row[0] if row else 0
 
+    def export_anonymized(self, session_id: str) -> dict:
+        """Return anonymized session statistics without any PHI."""
+        mapping_count = self.get_mapping_count(session_id)
+        categories = self._conn.execute(
+            "SELECT phi_category, COUNT(*) FROM vault_entries WHERE session_id = ? GROUP BY phi_category",
+            (session_id,),
+        ).fetchall()
+
+        date_range = self._conn.execute(
+            "SELECT MIN(created_at), MAX(created_at) FROM vault_entries WHERE session_id = ?",
+            (session_id,),
+        ).fetchone()
+
+        return {
+            "session_id": session_id,
+            "total_entries": mapping_count,
+            "categories": {cat: count for cat, count in categories},
+            "date_range": {"earliest": date_range[0], "latest": date_range[1]} if date_range[0] else None,
+        }
+
+    def purge_session(self, session_id: str) -> int:
+        """Securely delete all entries and the session itself. Returns entries deleted."""
+        with self._conn:
+            cursor = self._conn.execute(
+                "SELECT COUNT(*) FROM vault_entries WHERE session_id = ?", (session_id,)
+            )
+            count = cursor.fetchone()[0]
+            self._conn.execute("DELETE FROM vault_entries WHERE session_id = ?", (session_id,))
+            self._conn.execute("DELETE FROM sessions WHERE id = ?", (session_id,))
+        return count
+
+    def get_vault_stats(self) -> dict:
+        """Return overall vault statistics."""
+        import os
+        session_count = self.get_session_count()
+        entry_count = self.get_mapping_count()
+        db_size = os.path.getsize(str(self._db_path)) if self._db_path.exists() else 0
+        return {
+            "total_sessions": session_count,
+            "total_entries": entry_count,
+            "database_size_bytes": db_size,
+            "database_path": str(self._db_path),
+        }
+
     # ------------------------------------------------------------------
     # Session management
     # ------------------------------------------------------------------
