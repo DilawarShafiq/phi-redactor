@@ -60,6 +60,7 @@ class _LazyGroup(click.Group):
         "report": "phi_redactor.cli.report",
         "sessions": "phi_redactor.cli.sessions",
         "config": "phi_redactor.cli.config",
+        "plugins": "phi_redactor.cli.plugins",
     },
 )
 @click.option(

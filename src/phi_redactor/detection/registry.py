@@ -16,6 +16,8 @@ from phi_redactor.detection.recognizers import (
     BiometricRecognizer,
     DeviceRecognizer,
     FaxRecognizer,
+    FHIRResourceRecognizer,
+    HL7v2Recognizer,
     HealthPlanRecognizer,
     LicenseRecognizer,
     MRNRecognizer,
@@ -61,6 +63,9 @@ PRESIDIO_TO_PHI_CATEGORY: dict[str, PHICategory] = {
     "DEVICE_ID": PHICategory.DEVICE_ID,
     "BIOMETRIC_ID": PHICategory.BIOMETRIC_ID,
     "FAX_NUMBER": PHICategory.FAX_NUMBER,
+    # FHIR/HL7 recognizer entity types (Phase 9)
+    "FHIR_REFERENCE": PHICategory.OTHER_UNIQUE_ID,
+    "HL7V2_SEGMENT": PHICategory.OTHER_UNIQUE_ID,
 }
 
 # ---------------------------------------------------------------------------
@@ -76,6 +81,8 @@ _CUSTOM_RECOGNIZER_CLASSES: list[type[PatternRecognizer]] = [
     DeviceRecognizer,
     BiometricRecognizer,
     FaxRecognizer,
+    FHIRResourceRecognizer,
+    HL7v2Recognizer,
 ]
 
 
