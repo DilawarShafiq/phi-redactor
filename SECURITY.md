@@ -24,9 +24,11 @@ If you discover a security vulnerability in phi-redactor, please report it respo
 - **Key management**: Encryption keys stored in separate `.key` files with restricted permissions
 - **Hash-based deduplication**: Original values identified by SHA-256 hash, never by plaintext
 
-### HIPAA Compliance
+### HIPAA PHI Coverage
 
-phi-redactor implements the HIPAA Safe Harbor method (45 CFR 164.514(b)(2)), detecting and redacting all 18 PHI identifier categories:
+phi-redactor detects and pseudonymizes all 18 PHI identifier categories defined under HIPAA (45 CFR §164.514(b)). **Important:** this constitutes semantic pseudonymization — a PHI minimization technique — not Safe Harbor de-identification. Organizations must maintain a BAA with their LLM provider. See the [Compliance Posture](README.md#compliance-posture) section in the README for full details.
+
+The 18 PHI identifier categories covered:
 
 1. Names
 2. Geographic data (smaller than state)

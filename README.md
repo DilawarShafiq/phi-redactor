@@ -7,13 +7,15 @@
     <a href="https://www.python.org/downloads/"><img src="https://img.shields.io/badge/python-3.11+-blue.svg" alt="Python 3.11+"></a>
     <a href="https://github.com/dilawar-gopang/phi-redactor/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-green.svg" alt="License"></a>
     <a href="https://github.com/dilawar-gopang/phi-redactor/actions"><img src="https://img.shields.io/badge/CI-passing-brightgreen.svg" alt="CI"></a>
-    <a href="https://hipaa.com"><img src="https://img.shields.io/badge/HIPAA-Safe%20Harbor-red.svg" alt="HIPAA"></a>
+    <a href="https://github.com/dilawar-gopang/phi-redactor/blob/main/SECURITY.md"><img src="https://img.shields.io/badge/PHI-Minimization%20Proxy-orange.svg" alt="PHI Minimization"></a>
   </p>
 </p>
 
 ---
 
-**phi-redactor** is an open-source, drop-in PHI redaction proxy that sits between your healthcare AI applications and LLM providers (OpenAI, Anthropic). It automatically detects and masks all 18 HIPAA Safe Harbor identifiers in real-time, then restores original values locally -- so **PHI never leaves your infrastructure**.
+**phi-redactor** is an open-source, drop-in PHI masking proxy that sits between your healthcare AI applications and LLM providers (OpenAI, Anthropic). It automatically detects and pseudonymizes all 18 HIPAA PHI identifier categories in real-time, then restores original values locally — so **PHI never leaves your infrastructure in its original form**.
+
+> **Compliance notice:** phi-redactor performs *semantic pseudonymization* — replacing real identifiers with clinically coherent synthetic ones. This is a PHI minimization and risk-reduction technique, **not** HIPAA de-identification under the Safe Harbor method (45 CFR §164.514(b)). Healthcare organizations must have a Business Associate Agreement (BAA) with their LLM provider and should consult legal counsel regarding their compliance posture. See [Compliance Posture](#compliance-posture) below.
 
 ```
 Your App  -->  phi-redactor (localhost:8080)  -->  OpenAI / Anthropic
@@ -114,9 +116,9 @@ resp = httpx.post("http://localhost:8080/api/v1/rehydrate", json={
 print(resp.json()["text"])  # Original PHI restored
 ```
 
-## All 18 HIPAA Safe Harbor Identifiers
+## All 18 HIPAA PHI Identifier Categories
 
-phi-redactor detects and masks **all 18 identifier types** required by the HIPAA Safe Harbor method:
+phi-redactor detects and pseudonymizes **all 18 PHI identifier categories** defined under HIPAA (45 CFR §164.514(b)). Note: replacement values are synthetic but realistic — this is pseudonymization, not de-identification.
 
 | # | Category | Detection Method | Example |
 |---|----------|-----------------|---------|
@@ -171,7 +173,7 @@ phi-redactor detects and masks **all 18 identifier types** required by the HIPAA
 | **Encrypted Vault** | Fernet-encrypted SQLite for PHI-to-synthetic mappings |
 | **Proxy Server** | FastAPI reverse proxy with OpenAI + Anthropic adapters |
 | **Audit Trail** | Append-only hash-chain JSON Lines log (tamper-evident) |
-| **Compliance Reports** | HIPAA Safe Harbor evidence report generator |
+| **Audit Reports** | PHI detection and redaction activity report generator |
 
 ## API Endpoints
 
@@ -194,8 +196,8 @@ phi-redactor detects and masks **all 18 identifier types** required by the HIPAA
 | GET | `/api/v1/health` | Health check and system info |
 | GET | `/api/v1/stats` | Aggregate redaction statistics |
 | GET | `/api/v1/sessions` | List all sessions |
-| GET | `/api/v1/compliance/report` | Full HIPAA compliance report |
-| GET | `/api/v1/compliance/summary` | Quick compliance status |
+| GET | `/api/v1/compliance/report` | PHI detection and redaction activity report |
+| GET | `/api/v1/compliance/summary` | Quick redaction activity summary |
 | GET | `/api/v1/audit` | Query audit trail events |
 
 ## CLI Commands
@@ -246,6 +248,32 @@ pytest
 ruff check src/ tests/
 mypy src/
 ```
+
+## Compliance Posture
+
+phi-redactor is a **PHI minimization and risk-reduction proxy**. Understanding what it does — and does not — provide legally is essential before deployment in a healthcare context.
+
+### What phi-redactor does
+
+- Detects all 18 HIPAA PHI identifier categories and replaces them with clinically coherent synthetic values before forwarding requests to an LLM provider
+- Ensures original PHI is never transmitted in plaintext to a third-party API
+- Maintains an encrypted, tamper-evident audit trail of all redaction activity
+- Preserves clinical context so the LLM can reason effectively (unlike `[REDACTED]` approaches)
+
+### What phi-redactor does NOT do
+
+- **It does not constitute HIPAA de-identification.** Under the Safe Harbor method (45 CFR §164.514(b)(2)), all 18 identifiers must be *removed*, not replaced. Sending a synthetic name and date of birth to an external LLM means the data still contains identifiers — they are just pseudonymous, not absent.
+- **It does not eliminate the need for a BAA.** Any healthcare organization sending data (even pseudonymized) to OpenAI, Anthropic, or any other cloud LLM provider must have a signed Business Associate Agreement with that provider.
+- **It is not a substitute for legal counsel.** Compliance decisions in covered-entity or business-associate contexts require your legal and privacy team.
+
+### Recommended deployment posture
+
+1. Execute a BAA with your LLM provider
+2. Deploy phi-redactor as a defense-in-depth layer that minimizes PHI exposure in transit
+3. Use the audit trail for breach notification support and internal compliance documentation
+4. Consult a HIPAA compliance officer or attorney before making de-identification claims to patients, auditors, or OCR
+
+---
 
 ## License
 
