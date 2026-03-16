@@ -4,8 +4,8 @@ build-backend = "hatchling.build"
 
 [project]
 name = "phi-redactor"
-version = "0.1.0"
-description = "HIPAA-native PHI redaction proxy for AI/LLM interactions"
+version = "0.1.1"
+description = "HIPAA §164.514(c) surrogate code proxy — PHI never reaches the LLM"
 readme = "README.md"
 license = "Apache-2.0"
 requires-python = ">=3.11"
@@ -25,7 +25,7 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Medical Science Apps.",
     "Typing :: Typed",
 ]
-keywords = ["phi", "hipaa", "redaction", "llm", "proxy", "healthcare", "de-identification"]
+keywords = ["phi", "hipaa", "redaction", "llm", "proxy", "healthcare", "pseudonymization", "164-514-c", "surrogate-code", "expert-determination", "de-identification"]
 dependencies = [
     "fastapi>=0.110.0",
     "httpx>=0.27.0",

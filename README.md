@@ -1,7 +1,7 @@
 <p align="center">
   <h1 align="center">phi-redactor</h1>
   <p align="center">
-    <strong>HIPAA-native PHI redaction proxy for AI/LLM interactions</strong>
+    <strong>The only LLM proxy built to HIPAA §164.514(c) — real PHI never reaches the LLM</strong>
   </p>
   <p align="center">
     <a href="https://www.python.org/downloads/"><img src="https://img.shields.io/badge/python-3.11+-blue.svg" alt="Python 3.11+"></a>
@@ -313,5 +313,5 @@ Contributions welcome! Please open an issue first to discuss what you'd like to 
 ---
 
 <p align="center">
-  Built for healthcare AI developers who take HIPAA seriously.
+  Built to HIPAA §164.514(c). The LLM gets a fictional patient. Your vault keeps the truth.
 </p>

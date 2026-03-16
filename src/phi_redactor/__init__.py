@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 
 from phi_redactor.detection.engine import PhiDetectionEngine
 from phi_redactor.masking.semantic import SemanticMasker
