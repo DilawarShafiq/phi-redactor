@@ -24,9 +24,13 @@ If you discover a security vulnerability in phi-redactor, please report it respo
 - **Key management**: Encryption keys stored in separate `.key` files with restricted permissions
 - **Hash-based deduplication**: Original values identified by SHA-256 hash, never by plaintext
 
-### HIPAA PHI Coverage
+### PHI Coverage and Security Model
 
-phi-redactor detects and pseudonymizes all 18 PHI identifier categories defined under HIPAA (45 CFR §164.514(b)). **Important:** this constitutes semantic pseudonymization — a PHI minimization technique — not Safe Harbor de-identification. Organizations must maintain a BAA with their LLM provider. See the [Compliance Posture](README.md#compliance-posture) section in the README for full details.
+phi-redactor ensures **real PHI never reaches the LLM provider**. All 18 HIPAA PHI identifier categories are detected and replaced with synthetic tokens before the request leaves your network. The token-to-original mapping is stored in a Fernet-encrypted local vault — the LLM provider has no access to it and cannot reverse the synthetic tokens to original PHI.
+
+This is semantic pseudonymization with encrypted local token mapping. It is not Safe Harbor de-identification (which requires removal rather than replacement), but it provides a stronger privacy guarantee in the LLM use case: the cloud provider literally receives data about a fictional patient, not a redacted real one.
+
+See [Compliance Posture](README.md#compliance-posture) in the README for the full cryptographic breakdown and legal posture.
 
 The 18 PHI identifier categories covered:
 

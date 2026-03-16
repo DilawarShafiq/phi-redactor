@@ -13,9 +13,21 @@
 
 ---
 
-**phi-redactor** is an open-source, drop-in PHI masking proxy that sits between your healthcare AI applications and LLM providers (OpenAI, Anthropic). It automatically detects and pseudonymizes all 18 HIPAA PHI identifier categories in real-time, then restores original values locally — so **PHI never leaves your infrastructure in its original form**.
+**phi-redactor** is an open-source, drop-in PHI masking proxy that sits between your healthcare AI applications and LLM providers (OpenAI, Anthropic). It automatically detects all 18 HIPAA PHI identifier categories and replaces them with synthetic tokens before the request leaves your network — then restores original values locally from an encrypted vault.
 
-> **Compliance notice:** phi-redactor performs *semantic pseudonymization* — replacing real identifiers with clinically coherent synthetic ones. This is a PHI minimization and risk-reduction technique, **not** HIPAA de-identification under the Safe Harbor method (45 CFR §164.514(b)). Healthcare organizations must have a Business Associate Agreement (BAA) with their LLM provider and should consult legal counsel regarding their compliance posture. See [Compliance Posture](#compliance-posture) below.
+**The core guarantee: real PHI never reaches the LLM. Ever.**
+
+The LLM provider receives only synthetic tokens (e.g. "James Wilson", "07/22/1957") that have **no mathematical or derivable relationship** to the original values. Re-identification from the synthetic tokens alone is cryptographically impossible — the only mapping between token and original lives in a Fernet-encrypted SQLite vault that never leaves your infrastructure.
+
+This is fundamentally different from:
+- **Redaction** (`[REDACTED]`) — destroys clinical context, LLM cannot reason effectively
+- **Hashing** — reversible via rainbow tables if the input space is small
+- **Truncation** — partial PHI still present
+- **Safe Harbor removal** — identifiers removed from a document that still describes a real patient
+
+With phi-redactor, the LLM provider receives data that describes a *fictional patient*. The original patient identity exists only in your encrypted local vault.
+
+> **Legal posture:** phi-redactor is a *privacy-by-design PHI minimization proxy*. This technique (pseudonymization with encrypted local token mapping) is not the HIPAA Safe Harbor method (45 CFR §164.514(b)(2)), which requires removal rather than replacement. Healthcare organizations should maintain a BAA with their LLM provider and consult legal counsel. See [Compliance Posture](#compliance-posture) for a full breakdown.
 
 ```
 Your App  -->  phi-redactor (localhost:8080)  -->  OpenAI / Anthropic
@@ -31,11 +43,12 @@ Your App  -->  phi-redactor (localhost:8080)  -->  OpenAI / Anthropic
 
 | Problem | Solution |
 |---------|----------|
-| PHI leaks to cloud LLMs | Transparent proxy masks all 18 HIPAA identifiers |
-| Inconsistent fake data | Semantic masking generates clinically coherent replacements |
-| No audit trail | Tamper-evident hash-chain audit log for every redaction |
-| Complex integration | Zero code changes -- just change your base URL |
-| Multi-turn context loss | Encrypted vault preserves mappings across conversation turns |
+| PHI reaches cloud LLM providers | Proxy intercepts and replaces PHI with synthetic tokens — LLM never receives real data |
+| Synthetic tokens can be reversed | No — mapping lives only in an encrypted local vault; re-identification without vault access is cryptographically impossible |
+| Redaction destroys clinical context | Synthetic values are clinically coherent — the LLM reasons about a fictional patient with intact context |
+| No audit trail | Tamper-evident hash-chain audit log records every redaction event |
+| Complex integration | Zero code changes — just update your base URL |
+| Multi-turn context loss | Encrypted vault preserves token mappings across conversation turns |
 
 ## Quick Start
 
@@ -251,26 +264,40 @@ mypy src/
 
 ## Compliance Posture
 
-phi-redactor is a **PHI minimization and risk-reduction proxy**. Understanding what it does — and does not — provide legally is essential before deployment in a healthcare context.
+### The security guarantee
 
-### What phi-redactor does
+phi-redactor makes one hard guarantee: **the LLM provider never receives real PHI**.
 
-- Detects all 18 HIPAA PHI identifier categories and replaces them with clinically coherent synthetic values before forwarding requests to an LLM provider
-- Ensures original PHI is never transmitted in plaintext to a third-party API
-- Maintains an encrypted, tamper-evident audit trail of all redaction activity
-- Preserves clinical context so the LLM can reason effectively (unlike `[REDACTED]` approaches)
+Here is exactly what happens at the cryptographic level:
 
-### What phi-redactor does NOT do
+1. PHI is detected in the request (e.g., `"John Smith"`)
+2. A synthetic token is generated via Faker (e.g., `"James Wilson"`) — no derivable relationship to the original
+3. The mapping `John Smith → James Wilson` is stored in the vault as:
+   - **Key (lookup):** SHA-256 hash of `"John Smith"` — one-way, not reversible
+   - **Original:** Fernet-encrypted ciphertext — AES-128-CBC, key stored only on your machine
+   - **Synthetic:** plaintext `"James Wilson"` — safe to store because it reveals nothing
+4. The LLM receives `"James Wilson"` — a fictional person with no connection to your patient
+5. After the LLM responds, rehydration replaces `"James Wilson"` back to `"John Smith"` locally
 
-- **It does not constitute HIPAA de-identification.** Under the Safe Harbor method (45 CFR §164.514(b)(2)), all 18 identifiers must be *removed*, not replaced. Sending a synthetic name and date of birth to an external LLM means the data still contains identifiers — they are just pseudonymous, not absent.
-- **It does not eliminate the need for a BAA.** Any healthcare organization sending data (even pseudonymized) to OpenAI, Anthropic, or any other cloud LLM provider must have a signed Business Associate Agreement with that provider.
-- **It is not a substitute for legal counsel.** Compliance decisions in covered-entity or business-associate contexts require your legal and privacy team.
+An attacker who intercepts the network traffic sees only synthetic tokens. An attacker who steals the SQLite vault file sees only encrypted blobs without the key file. Neither can reconstruct the original PHI.
+
+### What this is (and is not) legally
+
+| | phi-redactor | HIPAA Safe Harbor (45 CFR §164.514(b)(2)) |
+|--|--|--|
+| PHI reaches LLM provider | Never | N/A — assumes data already de-identified |
+| Identifiers present in transmitted data | Yes (synthetic/fictional) | No — all 18 must be removed |
+| Re-identification possible by LLM provider | No — cryptographically impossible | N/A |
+| Qualifies as de-identification | No | Yes (if all 18 removed) |
+| BAA with LLM provider still required | Yes | Not applicable |
+
+phi-redactor is a **privacy-by-design pseudonymization proxy** — not a de-identification engine under the Safe Harbor definition. Safe Harbor requires removal; phi-redactor does something different: it ensures the entity receiving the data (the LLM provider) cannot link it to a real person.
 
 ### Recommended deployment posture
 
 1. Execute a BAA with your LLM provider
-2. Deploy phi-redactor as a defense-in-depth layer that minimizes PHI exposure in transit
-3. Use the audit trail for breach notification support and internal compliance documentation
+2. Deploy phi-redactor so that real PHI is never in the outbound request
+3. Use the tamper-evident audit trail for breach notification support and internal compliance documentation
 4. Consult a HIPAA compliance officer or attorney before making de-identification claims to patients, auditors, or OCR
 
 ---
