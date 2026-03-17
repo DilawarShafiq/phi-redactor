@@ -12,8 +12,21 @@ detection pipeline.
 
 from __future__ import annotations
 
+import os
+
 import pytest
 from presidio_analyzer import AnalyzerEngine, RecognizerRegistry
+from presidio_analyzer.nlp_engine import NlpEngineProvider
+
+# Shared NLP engine — loaded once per test session to avoid OOM from repeated
+# spaCy model loads. Uses the same model override as the detection engine.
+_SPACY_MODEL = os.environ.get("PHI_REDACTOR_SPACY_MODEL", "en_core_web_lg")
+_SHARED_NLP_ENGINE = NlpEngineProvider(
+    nlp_configuration={
+        "nlp_engine_name": "spacy",
+        "models": [{"lang_code": "en", "model_name": _SPACY_MODEL}],
+    }
+).create_engine()
 
 from phi_redactor.detection.recognizers.account import AccountRecognizer
 from phi_redactor.detection.recognizers.biometric import BiometricRecognizer
@@ -32,7 +45,8 @@ from phi_redactor.detection.recognizers.vehicle import VehicleRecognizer
 def _build_analyzer(*recognizers) -> AnalyzerEngine:
     """Create an AnalyzerEngine with only the given recognizer(s) loaded.
 
-    Uses a simple regex NLP engine (no spaCy required) to keep tests fast.
+    Reuses the module-level shared NLP engine to avoid loading spaCy once per
+    test (which causes OOM in CI when the full test suite runs).
     """
     registry = RecognizerRegistry()
     # Do NOT load predefined recognizers -- we want isolation
@@ -42,7 +56,7 @@ def _build_analyzer(*recognizers) -> AnalyzerEngine:
     return AnalyzerEngine(
         registry=registry,
         supported_languages=["en"],
-        nlp_engine=None,
+        nlp_engine=_SHARED_NLP_ENGINE,
     )
 
 
