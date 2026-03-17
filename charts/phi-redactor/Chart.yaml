@@ -1,0 +1,26 @@
+apiVersion: v2
+name: phi-redactor
+description: >
+  HIPAA §164.514(c) surrogate code proxy — PHI never reaches the LLM.
+  Detects and replaces Protected Health Information with synthetic tokens
+  before forwarding requests to OpenAI, Anthropic, Azure OpenAI, or Google
+  Gemini. Encrypted vault stores the real-to-synthetic mapping locally.
+type: application
+version: 0.1.1
+appVersion: "0.1.1"
+keywords:
+  - hipaa
+  - phi
+  - redaction
+  - llm
+  - proxy
+  - healthcare
+  - de-identification
+home: https://github.com/DilawarShafiq/phi-redactor
+sources:
+  - https://github.com/DilawarShafiq/phi-redactor
+maintainers:
+  - name: Dilawar Shafiq
+    email: dilawar.gopang@gmail.com
+annotations:
+  category: Security

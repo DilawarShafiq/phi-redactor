@@ -15,7 +15,7 @@ import click
 @click.option("--host", type=str, default=None, help="Bind host (default: 0.0.0.0).")
 @click.option(
     "--provider",
-    type=click.Choice(["openai", "anthropic"], case_sensitive=False),
+    type=click.Choice(["openai", "anthropic", "azure", "google"], case_sensitive=False),
     default=None,
     help="Default upstream LLM provider.",
 )
@@ -70,6 +70,8 @@ def serve(
     click.echo("")
     click.echo(f"  OpenAI:      http://{config.host}:{config.port}/openai/v1")
     click.echo(f"  Anthropic:   http://{config.host}:{config.port}/anthropic/v1")
+    click.echo(f"  Azure:       http://{config.host}:{config.port}/azure/v1")
+    click.echo(f"  Google:      http://{config.host}:{config.port}/google/v1beta")
     click.echo(f"  Redact:      http://{config.host}:{config.port}/api/v1/redact")
     click.echo(f"  Health:      http://{config.host}:{config.port}/api/v1/health")
     if config.dashboard_enabled:

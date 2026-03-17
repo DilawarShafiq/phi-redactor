@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "phi-redactor.fullname" . }}
+  labels:
+    {{- include "phi-redactor.labels" . | nindent 4 }}
+data:
+  PHI_REDACTOR_PORT: {{ .Values.config.port | quote }}
+  PHI_REDACTOR_HOST: {{ .Values.config.host | quote }}
+  PHI_REDACTOR_DEFAULT_PROVIDER: {{ .Values.config.defaultProvider | quote }}
+  PHI_REDACTOR_SENSITIVITY: {{ .Values.config.sensitivity | quote }}
+  PHI_REDACTOR_LOG_LEVEL: {{ .Values.config.logLevel | quote }}
+  PHI_REDACTOR_SPACY_MODEL: {{ .Values.config.spacyModel | quote }}
+  PHI_REDACTOR_DASHBOARD_ENABLED: {{ .Values.config.dashboardEnabled | quote }}
+  PHI_REDACTOR_SESSION_IDLE_TIMEOUT: {{ .Values.config.sessionIdleTimeout | quote }}
+  PHI_REDACTOR_SESSION_MAX_LIFETIME: {{ .Values.config.sessionMaxLifetime | quote }}
+  {{- if .Values.persistence.enabled }}
+  PHI_REDACTOR_VAULT_PATH: {{ printf "%s/vault.db" .Values.persistence.mountPath | quote }}
+  PHI_REDACTOR_AUDIT_PATH: {{ printf "%s/audit" .Values.persistence.mountPath | quote }}
+  {{- end }}
+  {{- if .Values.secrets.azureOpenaiApiVersion }}
+  AZURE_OPENAI_API_VERSION: {{ .Values.secrets.azureOpenaiApiVersion | quote }}
+  {{- end }}
