@@ -2,6 +2,7 @@
 
 To use: load this module via PluginLoader.load_from_module()
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass

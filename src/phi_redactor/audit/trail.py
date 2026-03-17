@@ -13,8 +13,7 @@ from __future__ import annotations
 
 import hashlib
 import json
-import os
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -24,7 +23,6 @@ from phi_redactor.models import (
     PHICategory,
     RedactionAction,
 )
-
 
 _GENESIS_HASH = "0" * 64  # SHA-256 zero hash for the first entry in the chain.
 
@@ -64,7 +62,7 @@ class AuditTrail:
         Returns the fully-populated :class:`AuditEvent`.
         """
         self._event_counter += 1
-        timestamp = datetime.now(timezone.utc)
+        timestamp = datetime.now(UTC)
 
         entry_hash = self._compute_hash(
             timestamp=timestamp,
@@ -127,13 +125,17 @@ class AuditTrail:
             if from_dt is not None or to_dt is not None:
                 try:
                     file_date = datetime.strptime(file_date_str, "%Y-%m-%d").replace(
-                        tzinfo=timezone.utc,
+                        tzinfo=UTC,
                     )
                 except ValueError:
                     continue
-                if from_dt is not None and file_date.date() > (to_dt.date() if to_dt else file_date.date()):
+                if from_dt is not None and file_date.date() > (
+                    to_dt.date() if to_dt else file_date.date()
+                ):
                     continue
-                if to_dt is not None and file_date.date() < (from_dt.date() if from_dt else file_date.date()):
+                if to_dt is not None and file_date.date() < (
+                    from_dt.date() if from_dt else file_date.date()
+                ):
                     continue
 
             for line in jsonl_path.read_text(encoding="utf-8").splitlines():
@@ -207,12 +209,7 @@ class AuditTrail:
     ) -> str:
         """SHA-256 hash of the canonical fields for chain integrity."""
         payload = (
-            f"{timestamp.isoformat()}"
-            f"|{session_id}"
-            f"|{category}"
-            f"|{confidence}"
-            f"|{action}"
-            f"|{previous_hash}"
+            f"{timestamp.isoformat()}|{session_id}|{category}|{confidence}|{action}|{previous_hash}"
         )
         return hashlib.sha256(payload.encode("utf-8")).hexdigest()
 

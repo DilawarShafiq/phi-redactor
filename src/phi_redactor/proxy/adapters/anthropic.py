@@ -207,9 +207,8 @@ class AnthropicAdapter(BaseProviderAdapter):
                 headers["x-api-key"] = api_key
 
         # Anthropic version
-        version = (
-            request_headers.get("anthropic-version")
-            or request_headers.get("Anthropic-Version")
+        version = request_headers.get("anthropic-version") or request_headers.get(
+            "Anthropic-Version"
         )
         headers["anthropic-version"] = version or "2023-06-01"
 

@@ -152,9 +152,8 @@ class OpenAIAdapter(BaseProviderAdapter):
         auth = request_headers.get("authorization") or request_headers.get("Authorization")
         if auth:
             headers["Authorization"] = auth
-        org = (
-            request_headers.get("openai-organization")
-            or request_headers.get("OpenAI-Organization")
+        org = request_headers.get("openai-organization") or request_headers.get(
+            "OpenAI-Organization"
         )
         if org:
             headers["OpenAI-Organization"] = org

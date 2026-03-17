@@ -13,9 +13,8 @@ from __future__ import annotations
 
 import pytest
 
-from phi_redactor.masking.clustering import IdentityClusterer, _PROXIMITY_THRESHOLD
+from phi_redactor.masking.clustering import _PROXIMITY_THRESHOLD, IdentityClusterer
 from phi_redactor.models import DetectionMethod, PHICategory, PHIDetection
-
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -64,9 +63,7 @@ class TestEmptyInput:
 
 
 class TestSingleNameAnchor:
-    def test_single_name_anchor_creates_one_cluster(
-        self, clusterer: IdentityClusterer
-    ) -> None:
+    def test_single_name_anchor_creates_one_cluster(self, clusterer: IdentityClusterer) -> None:
         """A single PERSON_NAME detection should create exactly one cluster."""
         text = "Patient John Smith was admitted."
         name_det = _make_detection(
@@ -88,9 +85,7 @@ class TestSameSentenceGrouping:
         name_det = _make_detection(
             PHICategory.PERSON_NAME, start=8, end=18, original_text="John Smith"
         )
-        ssn_det = _make_detection(
-            PHICategory.SSN, start=27, end=38, original_text="456-78-9012"
-        )
+        ssn_det = _make_detection(PHICategory.SSN, start=27, end=38, original_text="456-78-9012")
 
         result = clusterer.cluster([name_det, ssn_det], text)
 
@@ -102,9 +97,7 @@ class TestSameSentenceGrouping:
 
 
 class TestDifferentPatientsDistinctClusters:
-    def test_different_patients_different_clusters(
-        self, clusterer: IdentityClusterer
-    ) -> None:
+    def test_different_patients_different_clusters(self, clusterer: IdentityClusterer) -> None:
         """Two patients separated by well over the proximity threshold get distinct clusters."""
         padding = "x" * ((_PROXIMITY_THRESHOLD * 2) + 100)
         text = f"Patient Alice Brown visited. {padding} Patient Bob Jones visited."
@@ -137,9 +130,7 @@ class TestDifferentPatientsDistinctClusters:
 
 
 class TestNonIdentityCategoriesSingletons:
-    def test_non_identity_categories_become_singletons(
-        self, clusterer: IdentityClusterer
-    ) -> None:
+    def test_non_identity_categories_become_singletons(self, clusterer: IdentityClusterer) -> None:
         """WEB_URL and IP_ADDRESS are not identity categories; each becomes a singleton."""
         text = "Visit https://example.com from 192.168.1.1."
         url_det = _make_detection(
@@ -159,9 +150,7 @@ class TestNonIdentityCategoriesSingletons:
         assert url_det in all_detections
         assert ip_det in all_detections
 
-    def test_non_identity_not_merged_with_name_anchor(
-        self, clusterer: IdentityClusterer
-    ) -> None:
+    def test_non_identity_not_merged_with_name_anchor(self, clusterer: IdentityClusterer) -> None:
         """WEB_URL near a name anchor should NOT be merged into the identity cluster."""
         text = "John Smith uses https://example.com often."
         name_det = _make_detection(
@@ -216,9 +205,7 @@ class TestProximityThreshold:
         identity_dets = next(iter(identity_clusters.values()))
         assert phone_det in identity_dets
 
-    def test_proximity_beyond_threshold_stays_singleton(
-        self, clusterer: IdentityClusterer
-    ) -> None:
+    def test_proximity_beyond_threshold_stays_singleton(self, clusterer: IdentityClusterer) -> None:
         """A detection placed more than _PROXIMITY_THRESHOLD chars away is NOT clustered."""
         name_text = "Patient Eve Morris"
         # Separate the name from the phone by more than the threshold.

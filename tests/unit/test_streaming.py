@@ -80,7 +80,9 @@ class TestStreamRehydratorBuffering:
 
     def test_large_chunk_emitted(self, masker, session_id):
         rehydrator = StreamRehydrator(session_id=session_id, masker=masker, buffer_size=10)
-        result = rehydrator.process_chunk("This is a sufficiently long piece of text to exceed the buffer.")
+        result = rehydrator.process_chunk(
+            "This is a sufficiently long piece of text to exceed the buffer."
+        )
         # Should emit at least some text
         assert len(result) > 0
 

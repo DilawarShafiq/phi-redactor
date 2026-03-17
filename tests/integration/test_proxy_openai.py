@@ -7,8 +7,6 @@ and restored in inbound responses.
 
 from __future__ import annotations
 
-import json
-import uuid
 from unittest.mock import AsyncMock, patch
 
 import httpx
@@ -147,7 +145,10 @@ class TestProxyChatCompletions:
                 "choices": [
                     {
                         "index": 0,
-                        "message": {"role": "assistant", "content": "The patient should take metformin."},
+                        "message": {
+                            "role": "assistant",
+                            "content": "The patient should take metformin.",
+                        },
                         "finish_reason": "stop",
                     }
                 ],
@@ -166,7 +167,10 @@ class TestProxyChatCompletions:
                 json={
                     "model": "gpt-4",
                     "messages": [
-                        {"role": "user", "content": "Patient John Smith SSN 456-78-9012 has diabetes."}
+                        {
+                            "role": "user",
+                            "content": "Patient John Smith SSN 456-78-9012 has diabetes.",
+                        }
                     ],
                 },
                 headers={"Authorization": "Bearer test-key"},

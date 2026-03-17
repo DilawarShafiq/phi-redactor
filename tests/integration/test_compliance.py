@@ -18,7 +18,6 @@ import pytest
 from phi_redactor.audit.reports import ComplianceReportGenerator
 from phi_redactor.audit.trail import AuditTrail
 
-
 # ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------
@@ -137,9 +136,7 @@ class TestReportContainsNoPhi:
         report_json = json.dumps(report)
 
         for phi in phi_strings:
-            assert phi not in report_json, (
-                f"PHI value '{phi}' found in the compliance report"
-            )
+            assert phi not in report_json, f"PHI value '{phi}' found in the compliance report"
 
     def test_report_does_not_contain_original_text(
         self,
@@ -188,9 +185,7 @@ class TestIntegrityVerification:
 
 
 class TestEmptyReportNoData:
-    def test_empty_report_no_data(
-        self, report_generator: ComplianceReportGenerator
-    ) -> None:
+    def test_empty_report_no_data(self, report_generator: ComplianceReportGenerator) -> None:
         """An empty audit trail must produce a report where compliance_status.overall is 'no_data'."""
         report = report_generator.generate_report()
 
@@ -200,9 +195,7 @@ class TestEmptyReportNoData:
             f"got '{compliance['overall']}'"
         )
 
-    def test_empty_report_summary_zeros(
-        self, report_generator: ComplianceReportGenerator
-    ) -> None:
+    def test_empty_report_summary_zeros(self, report_generator: ComplianceReportGenerator) -> None:
         """Summary for an empty audit trail should report zero events and sessions."""
         report = report_generator.generate_report()
         summary = report["summary"]

@@ -12,12 +12,11 @@ import hashlib
 import random
 import sqlite3
 import uuid
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 from phi_redactor.models import SessionInfo, SessionStatus
 from phi_redactor.vault.encryption import VaultEncryption
-
 
 _DEFAULT_SESSION_LIFETIME_HOURS = 24
 
@@ -47,9 +46,7 @@ class PhiVault:
         self._db_path = Path(db_path).expanduser()
         self._db_path.parent.mkdir(parents=True, exist_ok=True)
 
-        effective_key_path = (
-            Path(key_path) if key_path else self._db_path.with_suffix(".key")
-        )
+        effective_key_path = Path(key_path) if key_path else self._db_path.with_suffix(".key")
 
         self._encryption = VaultEncryption(
             key_path=effective_key_path,
@@ -114,7 +111,7 @@ class PhiVault:
         entries can be stored without requiring the caller to pre-create a
         session via :meth:`create_session`.
         """
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         expires = now + timedelta(hours=_DEFAULT_SESSION_LIFETIME_HOURS)
         date_shift = random.randint(-365, 365)
         age_shift = random.randint(-5, 5)
@@ -156,11 +153,8 @@ class PhiVault:
 
         original_hash = self._hash_original(original)
         encrypted = self._encryption.encrypt(original)
-        now = datetime.now(timezone.utc).isoformat()
-        expires = (
-            datetime.now(timezone.utc)
-            + timedelta(hours=_DEFAULT_SESSION_LIFETIME_HOURS)
-        ).isoformat()
+        now = datetime.now(UTC).isoformat()
+        expires = (datetime.now(UTC) + timedelta(hours=_DEFAULT_SESSION_LIFETIME_HOURS)).isoformat()
 
         with self._conn:
             self._conn.execute(
@@ -211,10 +205,7 @@ class PhiVault:
             """,
             (session_id,),
         ).fetchall()
-        return {
-            synthetic: self._encryption.decrypt(encrypted)
-            for synthetic, encrypted in rows
-        }
+        return {synthetic: self._encryption.decrypt(encrypted) for synthetic, encrypted in rows}
 
     def get_session_mappings(self, session_id: str) -> list[dict[str, str]]:
         """Return all mappings for a session as a list of dicts.
@@ -270,7 +261,9 @@ class PhiVault:
             "session_id": session_id,
             "total_entries": mapping_count,
             "categories": {cat: count for cat, count in categories},
-            "date_range": {"earliest": date_range[0], "latest": date_range[1]} if date_range[0] else None,
+            "date_range": {"earliest": date_range[0], "latest": date_range[1]}
+            if date_range[0]
+            else None,
         }
 
     def purge_session(self, session_id: str) -> int:
@@ -287,6 +280,7 @@ class PhiVault:
     def get_vault_stats(self) -> dict:
         """Return overall vault statistics."""
         import os
+
         session_count = self.get_session_count()
         entry_count = self.get_mapping_count()
         db_size = os.path.getsize(str(self._db_path)) if self._db_path.exists() else 0
@@ -304,7 +298,7 @@ class PhiVault:
     def create_session(self, provider: str = "openai") -> SessionInfo:
         """Create a new vault session and return its metadata."""
         session_id = str(uuid.uuid4())
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         expires = now + timedelta(hours=_DEFAULT_SESSION_LIFETIME_HOURS)
         date_shift = random.randint(-365, 365)
         age_shift = random.randint(-5, 5)
@@ -349,7 +343,7 @@ class PhiVault:
 
         Returns the number of sessions removed.
         """
-        now = datetime.now(timezone.utc).isoformat()
+        now = datetime.now(UTC).isoformat()
         with self._conn:
             # Count before deletion.
             cursor = self._conn.execute(

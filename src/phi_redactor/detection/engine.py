@@ -26,7 +26,7 @@ from phi_redactor.detection.registry import (
     PRESIDIO_TO_PHI_CATEGORY,
     HIPAARecognizerRegistry,
 )
-from phi_redactor.models import DetectionMethod, PHICategory, PHIDetection
+from phi_redactor.models import DetectionMethod, PHIDetection
 
 if TYPE_CHECKING:
     from presidio_analyzer import RecognizerResult
@@ -52,9 +52,7 @@ class PhiDetectionEngine:
 
     def __init__(self, sensitivity: float = 0.5) -> None:
         if not 0.0 <= sensitivity <= 1.0:
-            raise ValueError(
-                f"sensitivity must be between 0.0 and 1.0, got {sensitivity}"
-            )
+            raise ValueError(f"sensitivity must be between 0.0 and 1.0, got {sensitivity}")
         self._sensitivity = sensitivity
 
         # Ensure spaCy model is available
@@ -77,8 +75,7 @@ class PhiDetectionEngine:
         )
 
         logger.info(
-            "PhiDetectionEngine initialized with sensitivity=%.2f, "
-            "supported categories=%s",
+            "PhiDetectionEngine initialized with sensitivity=%.2f, supported categories=%s",
             self._sensitivity,
             [c.value for c in self._hipaa_registry.get_supported_categories()],
         )
@@ -88,9 +85,7 @@ class PhiDetectionEngine:
         """Current default sensitivity threshold."""
         return self._sensitivity
 
-    def detect(
-        self, text: str, sensitivity: float | None = None
-    ) -> list[PHIDetection]:
+    def detect(self, text: str, sensitivity: float | None = None) -> list[PHIDetection]:
         """Run PHI detection on the given text.
 
         Args:
@@ -106,9 +101,7 @@ class PhiDetectionEngine:
         if not text or not text.strip():
             return []
 
-        effective_sensitivity = (
-            sensitivity if sensitivity is not None else self._sensitivity
-        )
+        effective_sensitivity = sensitivity if sensitivity is not None else self._sensitivity
         if not 0.0 <= effective_sensitivity <= 1.0:
             raise ValueError(
                 f"sensitivity must be between 0.0 and 1.0, got {effective_sensitivity}"
@@ -157,9 +150,7 @@ class PhiDetectionEngine:
             spacy.load(_SPACY_MODEL)
             logger.debug("spaCy model '%s' already available", _SPACY_MODEL)
         except OSError:
-            logger.info(
-                "spaCy model '%s' not found, downloading...", _SPACY_MODEL
-            )
+            logger.info("spaCy model '%s' not found, downloading...", _SPACY_MODEL)
             subprocess.check_call(
                 [sys.executable, "-m", "spacy", "download", _SPACY_MODEL],
                 stdout=subprocess.DEVNULL,
@@ -167,9 +158,7 @@ class PhiDetectionEngine:
             )
             logger.info("spaCy model '%s' downloaded successfully", _SPACY_MODEL)
 
-    def _map_presidio_to_phi(
-        self, result: RecognizerResult, text: str
-    ) -> PHIDetection | None:
+    def _map_presidio_to_phi(self, result: RecognizerResult, text: str) -> PHIDetection | None:
         """Map a Presidio RecognizerResult to our PHIDetection model.
 
         Args:

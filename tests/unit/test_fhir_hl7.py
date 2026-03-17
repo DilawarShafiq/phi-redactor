@@ -1,4 +1,5 @@
 """Unit tests for FHIR and HL7v2 recognizers."""
+
 from __future__ import annotations
 
 import pytest
@@ -11,9 +12,7 @@ try:
 except (ImportError, OSError):
     _SPACY_AVAILABLE = False
 
-pytestmark = pytest.mark.skipif(
-    not _SPACY_AVAILABLE, reason="spaCy model not available"
-)
+pytestmark = pytest.mark.skipif(not _SPACY_AVAILABLE, reason="spaCy model not available")
 
 from phi_redactor.detection import PhiDetectionEngine
 from phi_redactor.models import PHICategory

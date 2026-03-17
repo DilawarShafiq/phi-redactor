@@ -15,10 +15,10 @@ import pytest
 from phi_redactor.masking.semantic import SemanticMasker
 from phi_redactor.models import DetectionMethod, PHICategory, PHIDetection
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
 
 def _detection(
     category: PHICategory,
@@ -46,13 +46,14 @@ def _detection(
 # Fixtures
 # ---------------------------------------------------------------------------
 
-@pytest.fixture()
+
+@pytest.fixture
 def masker() -> SemanticMasker:
     """Return a masker with no vault (in-memory only)."""
     return SemanticMasker(vault=None)
 
 
-@pytest.fixture()
+@pytest.fixture
 def sid() -> str:
     """Return a stable session ID for deterministic tests."""
     return str(uuid.uuid4())
@@ -61,6 +62,7 @@ def sid() -> str:
 # ---------------------------------------------------------------------------
 # T018-1  Masked text contains none of the original PHI values
 # ---------------------------------------------------------------------------
+
 
 class TestMaskedTextContainsNoPHI:
     """After masking, no original PHI value should remain in the output."""
@@ -99,6 +101,7 @@ class TestMaskedTextContainsNoPHI:
 # T018-2  Synthetic SSNs have valid XXX-XX-XXXX format
 # ---------------------------------------------------------------------------
 
+
 class TestSSNFormat:
     """Synthetic SSNs must match the ``XXX-XX-XXXX`` pattern."""
 
@@ -120,6 +123,7 @@ class TestSSNFormat:
 # T018-3  Synthetic names differ from originals
 # ---------------------------------------------------------------------------
 
+
 class TestSyntheticNamesDiffer:
     """Generated names must not be identical to the original PHI name."""
 
@@ -138,6 +142,7 @@ class TestSyntheticNamesDiffer:
 # ---------------------------------------------------------------------------
 # T018-4  Consistency: same original + same session_id = same synthetic
 # ---------------------------------------------------------------------------
+
 
 class TestConsistency:
     """Repeated masking of the same value within a session must be stable."""
@@ -174,6 +179,7 @@ class TestConsistency:
 # T018-5  Rehydration: mask then rehydrate returns original text
 # ---------------------------------------------------------------------------
 
+
 class TestRehydration:
     """Round-tripping through mask -> rehydrate must recover the original."""
 
@@ -202,14 +208,12 @@ class TestRehydration:
 # T018-6  Multiple detections in the same text all get replaced
 # ---------------------------------------------------------------------------
 
+
 class TestMultipleDetections:
     """Every detection in a single call must be replaced."""
 
     def test_all_detections_replaced(self, masker: SemanticMasker, sid: str) -> None:
-        text = (
-            "Name: Alice Brown, Phone: (555) 000-1111, "
-            "Email: alice@example.com, IP: 10.0.0.1"
-        )
+        text = "Name: Alice Brown, Phone: (555) 000-1111, Email: alice@example.com, IP: 10.0.0.1"
         detections = [
             _detection(PHICategory.PERSON_NAME, 6, 17, "Alice Brown"),
             _detection(PHICategory.PHONE_NUMBER, 26, 40, "(555) 000-1111"),
@@ -236,6 +240,7 @@ class TestMultipleDetections:
 # ---------------------------------------------------------------------------
 # T018-7  Empty detections returns original text unchanged
 # ---------------------------------------------------------------------------
+
 
 class TestEmptyDetections:
     """When there are no detections the text must pass through untouched."""

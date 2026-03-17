@@ -15,7 +15,8 @@ import json
 import logging
 import time
 import uuid
-from typing import TYPE_CHECKING, AsyncIterator
+from collections.abc import AsyncIterator
+from typing import TYPE_CHECKING
 
 import httpx
 from fastapi import APIRouter, HTTPException, Request
@@ -46,7 +47,9 @@ _UPSTREAM_BASE_URL = "https://api.openai.com"
 # ---------------------------------------------------------------------------
 
 
-def _get_components(request: Request) -> tuple[
+def _get_components(
+    request: Request,
+) -> tuple[
     PhiDetectionEngine,
     SemanticMasker,
     SessionManager,
@@ -157,7 +160,13 @@ async def _chat_completions_handler(request: Request) -> StreamingResponse | JSO
     # 4 + 5. Detect and mask PHI.
     start_time = time.monotonic()
     masked_texts = _detect_and_mask(
-        engine, masker, audit, session_id, request_id, original_texts, sensitivity,
+        engine,
+        masker,
+        audit,
+        session_id,
+        request_id,
+        original_texts,
+        sensitivity,
     )
     processing_ms = (time.monotonic() - start_time) * 1000
 
@@ -369,7 +378,13 @@ async def _embeddings_handler(request: Request) -> JSONResponse:
     # Detect and mask.
     start_time = time.monotonic()
     masked_texts = _detect_and_mask(
-        engine, masker, audit, session_id, request_id, input_texts, sensitivity,
+        engine,
+        masker,
+        audit,
+        session_id,
+        request_id,
+        input_texts,
+        sensitivity,
     )
     processing_ms = (time.monotonic() - start_time) * 1000
 

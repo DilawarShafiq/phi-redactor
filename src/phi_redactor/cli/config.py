@@ -94,11 +94,7 @@ def list_providers(ctx: click.Context) -> None:
         key_color = "green" if has_key else "yellow"
         default_marker = " [default]" if is_default else ""
 
-        click.echo(
-            f"  {'*' if is_default else ' '} {name:<12}"
-            f" {info['description']:<35}"
-            f" "
-        )
+        click.echo(f"  {'*' if is_default else ' '} {name:<12} {info['description']:<35} ")
         click.secho(
             f"    {key_status}{default_marker}",
             fg=key_color,

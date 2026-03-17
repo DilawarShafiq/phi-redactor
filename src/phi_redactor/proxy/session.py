@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 from phi_redactor.models import SessionInfo, SessionStatus
 from phi_redactor.vault.store import PhiVault
@@ -71,7 +71,7 @@ class SessionManager:
         Returns:
             A :class:`SessionInfo` instance in ``ACTIVE`` status.
         """
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
 
         if session_id is not None and session_id in self._sessions:
             session = self._sessions[session_id]
@@ -114,9 +114,7 @@ class SessionManager:
         """
         session = self._sessions.get(session_id)
         if session is not None:
-            self._sessions[session_id] = session.model_copy(
-                update={"status": SessionStatus.CLOSED}
-            )
+            self._sessions[session_id] = session.model_copy(update={"status": SessionStatus.CLOSED})
             logger.info("Session %s closed explicitly", session_id)
         else:
             logger.debug("Attempted to close unknown session %s", session_id)
@@ -132,7 +130,7 @@ class SessionManager:
     @property
     def active_count(self) -> int:
         """Number of sessions currently in ACTIVE status."""
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         return sum(1 for s in self._sessions.values() if self._is_active(s, now))
 
     # ------------------------------------------------------------------
@@ -155,7 +153,7 @@ class SessionManager:
 
     def _run_cleanup(self) -> None:
         """Single pass: expire sessions that have exceeded their limits."""
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         expired_ids: list[str] = []
 
         for sid, session in self._sessions.items():

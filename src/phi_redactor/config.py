@@ -17,13 +17,12 @@ import json
 import logging
 import re
 import sys
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
 from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
-
 
 # ---------------------------------------------------------------------------
 # Default paths
@@ -207,7 +206,7 @@ class PhiSafeFormatter(logging.Formatter):
         message = _scrub_phi(message)
 
         log_entry: dict[str, Any] = {
-            "timestamp": datetime.fromtimestamp(record.created, tz=timezone.utc).isoformat(),
+            "timestamp": datetime.fromtimestamp(record.created, tz=UTC).isoformat(),
             "level": record.levelname,
             "logger": record.name,
             "message": message,

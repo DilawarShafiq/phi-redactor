@@ -8,7 +8,7 @@ etc., ensuring the masked clinical note reads naturally.
 from __future__ import annotations
 
 import hashlib
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 from faker import Faker
 
@@ -53,9 +53,7 @@ class SyntheticIdentityFactory:
         self._locale = locale
         self._cache: dict[str, SyntheticIdentity] = {}
 
-    def create_identity(
-        self, cluster_id: str, session_id: str
-    ) -> SyntheticIdentity:
+    def create_identity(self, cluster_id: str, session_id: str) -> SyntheticIdentity:
         """Create or retrieve a synthetic identity for a cluster.
 
         Args:
@@ -103,9 +101,7 @@ class SyntheticIdentityFactory:
         self._cache[cache_key] = identity
         return identity
 
-    def get_replacement(
-        self, detection: PHIDetection, identity: SyntheticIdentity
-    ) -> str:
+    def get_replacement(self, detection: PHIDetection, identity: SyntheticIdentity) -> str:
         """Get the appropriate replacement value from a synthetic identity.
 
         Args:

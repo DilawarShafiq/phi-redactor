@@ -9,11 +9,11 @@ from phi_redactor.masking.semantic import SemanticMasker
 from phi_redactor.vault.store import PhiVault
 
 __all__ = [
-    "__version__",
     "PhiDetectionEngine",
     "PhiRedactor",
     "PhiVault",
     "SemanticMasker",
+    "__version__",
 ]
 
 
@@ -68,4 +68,4 @@ class PhiRedactor:
 
 
 # Lazy import to avoid circular dependency
-from phi_redactor.models import RedactionResult as RedactionResult  # noqa: E402
+from phi_redactor.models import RedactionResult as RedactionResult

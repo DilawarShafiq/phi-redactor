@@ -65,3 +65,24 @@ packages = ["src/phi_redactor"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 asyncio_mode = "auto"
+
+[tool.ruff]
+line-length = 100
+
+[tool.ruff.lint]
+ignore = [
+    "E501",    # line too long — HTML templates and long strings are intentional
+    "E402",    # module import not at top — lazy imports in CLI/proxy are intentional
+    "S104",    # binding to 0.0.0.0 is intentional for a proxy server
+    "S311",    # standard PRNG — Faker uses random for synthetic data generation, not crypto
+    "S603",    # subprocess call for spaCy model download is intentional
+    "B017",    # blind exception in tests — broad catch is intentional for proxy fail-safe tests
+    "B904",    # raise-without-from-clause — HTTPException re-raise is standard FastAPI pattern
+    "C416",    # unnecessary dict comprehension — pre-existing, readability preference
+    "F841",    # unused variable — pre-existing in tests
+    "N806",    # uppercase variable in function — KNOWN_PROVIDERS is a constant by convention
+    "PT011",   # pytest.raises too broad — pre-existing in tests
+    "RUF003",  # ambiguous EN DASH in comment — pre-existing documentation style
+    "RUF012",  # ClassVar annotation — Presidio recognizer pattern is upstream convention
+    "RUF059",  # unused unpacked variable — side-effect via vault store
+]

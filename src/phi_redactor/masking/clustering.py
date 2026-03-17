@@ -8,7 +8,6 @@ a single synthetic identity can be applied consistently.
 from __future__ import annotations
 
 import re
-from collections import defaultdict
 
 from phi_redactor.models import PHICategory, PHIDetection
 
@@ -42,9 +41,7 @@ class IdentityClusterer:
     Detections without a nearby name anchor form singleton clusters.
     """
 
-    def cluster(
-        self, detections: list[PHIDetection], text: str
-    ) -> dict[str, list[PHIDetection]]:
+    def cluster(self, detections: list[PHIDetection], text: str) -> dict[str, list[PHIDetection]]:
         """Group detections into identity clusters.
 
         Args:
@@ -62,9 +59,7 @@ class IdentityClusterer:
         sentence_spans = self._get_sentence_spans(text)
 
         # Find name anchors (PERSON_NAME detections)
-        name_anchors = [
-            d for d in detections if d.category == PHICategory.PERSON_NAME
-        ]
+        name_anchors = [d for d in detections if d.category == PHICategory.PERSON_NAME]
 
         clusters: dict[str, list[PHIDetection]] = {}
         assigned: set[int] = set()  # Track assigned detection indices by (start, end)

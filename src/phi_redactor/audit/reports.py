@@ -24,7 +24,7 @@ from __future__ import annotations
 
 import json
 from collections import Counter
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -73,7 +73,7 @@ class ComplianceReportGenerator:
         Returns:
             A structured dict containing the full compliance report.
         """
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         events = self._audit.query(
             session_id=session_id,
             from_dt=from_dt,
@@ -119,7 +119,7 @@ class ComplianceReportGenerator:
         """
         events = self._audit.query(from_dt=from_dt, to_dt=to_dt, limit=100_000)
         return {
-            "generated_at": datetime.now(timezone.utc).isoformat(),
+            "generated_at": datetime.now(UTC).isoformat(),
             **self._build_summary(events),
             "compliance_status": self._assess_compliance(events),
         }
@@ -136,7 +136,9 @@ class ComplianceReportGenerator:
         Returns the path to the written file.
         """
         report = self.generate_report(
-            from_dt=from_dt, to_dt=to_dt, session_id=session_id,
+            from_dt=from_dt,
+            to_dt=to_dt,
+            session_id=session_id,
         )
         path = Path(output_path).expanduser()
         path.parent.mkdir(parents=True, exist_ok=True)
@@ -236,7 +238,7 @@ class ComplianceReportGenerator:
         return {
             "hash_chain_valid": is_valid,
             "status": "passed" if is_valid else "FAILED",
-            "verified_at": datetime.now(timezone.utc).isoformat(),
+            "verified_at": datetime.now(UTC).isoformat(),
         }
 
     def generate_attestation(

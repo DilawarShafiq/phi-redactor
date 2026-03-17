@@ -17,7 +17,6 @@ from datetime import datetime
 
 from pydantic import BaseModel, Field
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
@@ -164,8 +163,7 @@ class PHIDetection(BaseModel):
     original_text: str = Field(
         default="",
         description=(
-            "Raw PHI value. SECURITY: must never be logged or included "
-            "in error messages."
+            "Raw PHI value. SECURITY: must never be logged or included in error messages."
         ),
     )
 

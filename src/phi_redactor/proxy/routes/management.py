@@ -285,6 +285,7 @@ async def generate_safe_harbor_report(
         reports_dir = Path(cfg.audit_path).parent / "reports"
     except AttributeError:
         import tempfile
+
         reports_dir = Path(tempfile.gettempdir()) / "phi-redactor" / "reports"
 
     reports_dir.mkdir(parents=True, exist_ok=True)
@@ -292,6 +293,7 @@ async def generate_safe_harbor_report(
 
     if fmt == "json":
         import json as _json
+
         output_path.write_text(_json.dumps(report, indent=2, default=str), encoding="utf-8")
     elif fmt == "md":
         output_path.write_text(render_markdown(report), encoding="utf-8")

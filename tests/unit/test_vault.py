@@ -11,8 +11,7 @@ Covers tasks T019-T022 acceptance criteria:
 
 from __future__ import annotations
 
-import time
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 import pytest
@@ -20,7 +19,6 @@ import pytest
 from phi_redactor.vault.encryption import VaultEncryption
 from phi_redactor.vault.session_map import SessionTokenMap
 from phi_redactor.vault.store import PhiVault
-
 
 # -----------------------------------------------------------------------
 # Fixtures
@@ -67,9 +65,7 @@ class TestVaultEncryption:
         ct = encryption.encrypt("hello")
         assert isinstance(ct, bytes)
 
-    def test_different_plaintexts_different_ciphertexts(
-        self, encryption: VaultEncryption
-    ) -> None:
+    def test_different_plaintexts_different_ciphertexts(self, encryption: VaultEncryption) -> None:
         """Two different plaintexts should never produce the same ciphertext."""
         ct1 = encryption.encrypt("Alice")
         ct2 = encryption.encrypt("Bob")
@@ -200,7 +196,7 @@ class TestCleanupExpired:
         vault.store_mapping(session.id, "Jane Doe", "SYNTH_J", "PERSON_NAME")
 
         # Manually backdate the session to make it expired.
-        past = (datetime.now(timezone.utc) - timedelta(hours=48)).isoformat()
+        past = (datetime.now(UTC) - timedelta(hours=48)).isoformat()
         vault._conn.execute(
             "UPDATE sessions SET expires_at = ? WHERE id = ?",
             (past, session.id),
@@ -273,10 +269,16 @@ class TestSessionTokenMap:
             return f"GENERATED_{call_count}"
 
         result1 = token_map.get_or_create_synthetic(
-            session.id, "John Smith", "PERSON_NAME", generator,
+            session.id,
+            "John Smith",
+            "PERSON_NAME",
+            generator,
         )
         result2 = token_map.get_or_create_synthetic(
-            session.id, "John Smith", "PERSON_NAME", generator,
+            session.id,
+            "John Smith",
+            "PERSON_NAME",
+            generator,
         )
 
         assert result1 == result2 == "GENERATED_1"
@@ -288,7 +290,10 @@ class TestSessionTokenMap:
         token_map = SessionTokenMap(vault)
 
         synthetic = token_map.get_or_create_synthetic(
-            session.id, "123-45-6789", "SSN", lambda: "SYNTH_SSN_1",
+            session.id,
+            "123-45-6789",
+            "SSN",
+            lambda: "SYNTH_SSN_1",
         )
         original = token_map.get_original(session.id, synthetic)
         assert original == "123-45-6789"

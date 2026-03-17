@@ -20,7 +20,6 @@ import pytest
 
 from phi_redactor.masking.date_shifter import DateShifter
 
-
 # ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------
@@ -166,17 +165,13 @@ class TestSessionConsistency:
 
 
 class TestTemporalOrderPreservation:
-    def test_temporal_order_preserved_date1_before_date2(
-        self, shifter: DateShifter
-    ) -> None:
+    def test_temporal_order_preserved_date1_before_date2(self, shifter: DateShifter) -> None:
         """If date1 < date2, shifted_date1 must still be <= shifted_date2."""
         date1 = "01/10/2020"
         date2 = "03/15/2020"
         assert shifter.preserves_temporal_order(date1, date2)
 
-    def test_temporal_order_preserved_date2_before_date1(
-        self, shifter: DateShifter
-    ) -> None:
+    def test_temporal_order_preserved_date2_before_date1(self, shifter: DateShifter) -> None:
         """Temporal order is preserved regardless of which date is earlier."""
         date1 = "12/31/2025"
         date2 = "01/01/2025"

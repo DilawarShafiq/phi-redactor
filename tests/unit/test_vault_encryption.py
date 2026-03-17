@@ -16,7 +16,6 @@ import pytest
 from phi_redactor.vault.encryption import VaultEncryption
 from phi_redactor.vault.store import PhiVault
 
-
 # ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------
@@ -71,9 +70,7 @@ class TestStoredDataNotPlaintext:
                 f"Plaintext PHI '{phi}' found unencrypted in the vault database file"
             )
 
-    def test_synthetic_values_visible_in_db_file(
-        self, vault: PhiVault, vault_path: Path
-    ) -> None:
+    def test_synthetic_values_visible_in_db_file(self, vault: PhiVault, vault_path: Path) -> None:
         """Synthetic values (non-sensitive) may appear unencrypted in the database."""
         session = vault.create_session()
         synthetic = "SYNTH_VISIBLE_MARKER_XYZ"
@@ -184,7 +181,6 @@ class TestDifferentPassphrasesDifferentCiphertexts:
 
     def test_different_passphrases_cannot_cross_decrypt(self, tmp_dir: Path) -> None:
         """Ciphertext from passphrase A should not be decryptable with passphrase B key."""
-        from cryptography.fernet import InvalidToken
 
         key_path_a = tmp_dir / "key_x.key"
         key_path_b = tmp_dir / "key_y.key"

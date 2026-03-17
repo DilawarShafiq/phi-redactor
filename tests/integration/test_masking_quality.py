@@ -22,7 +22,6 @@ from phi_redactor.detection.engine import PhiDetectionEngine
 from phi_redactor.masking.semantic import SemanticMasker
 from phi_redactor.vault.store import PhiVault
 
-
 # ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------

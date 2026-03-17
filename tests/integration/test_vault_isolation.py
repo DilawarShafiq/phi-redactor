@@ -9,13 +9,12 @@ Verifies that:
 
 from __future__ import annotations
 
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 import pytest
 
 from phi_redactor.vault.store import PhiVault
-
 
 # ---------------------------------------------------------------------------
 # Fixtures
@@ -73,9 +72,7 @@ class TestConcurrentSessionsDifferentMappings:
 
 
 class TestSessionCannotAccessOtherSession:
-    def test_session_cannot_access_other_session_by_original(
-        self, vault: PhiVault
-    ) -> None:
+    def test_session_cannot_access_other_session_by_original(self, vault: PhiVault) -> None:
         """lookup_by_original for session B must return None for session A's mapping."""
         session_a = vault.create_session()
         session_b = vault.create_session()
@@ -85,9 +82,7 @@ class TestSessionCannotAccessOtherSession:
         # Session B must not see session A's data.
         assert vault.lookup_by_original(session_b.id, "secret-phi") is None
 
-    def test_session_cannot_access_other_session_by_synthetic(
-        self, vault: PhiVault
-    ) -> None:
+    def test_session_cannot_access_other_session_by_synthetic(self, vault: PhiVault) -> None:
         """lookup_by_synthetic for session B must return None for session A's mapping."""
         session_a = vault.create_session()
         session_b = vault.create_session()
@@ -119,7 +114,7 @@ class TestExpiredSessionEntriesCleaned:
         vault.store_mapping(session.id, "old-phi", "old-synth", "PERSON_NAME")
 
         # Backdate the session's expiry to the past.
-        past = (datetime.now(timezone.utc) - timedelta(hours=48)).isoformat()
+        past = (datetime.now(UTC) - timedelta(hours=48)).isoformat()
         vault._conn.execute(
             "UPDATE sessions SET expires_at = ? WHERE id = ?",
             (past, session.id),
@@ -151,7 +146,7 @@ class TestExpiredSessionEntriesCleaned:
         vault.store_mapping(expired_session.id, "remove-me", "synth-remove", "PERSON_NAME")
 
         # Expire one session.
-        past = (datetime.now(timezone.utc) - timedelta(hours=1)).isoformat()
+        past = (datetime.now(UTC) - timedelta(hours=1)).isoformat()
         vault._conn.execute(
             "UPDATE sessions SET expires_at = ? WHERE id = ?",
             (past, expired_session.id),

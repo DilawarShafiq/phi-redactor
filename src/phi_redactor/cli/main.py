@@ -28,7 +28,9 @@ class _LazyGroup(click.Group):
 
     _lazy_commands: dict[str, str]
 
-    def __init__(self, *args: Any, lazy_commands: dict[str, str] | None = None, **kwargs: Any) -> None:
+    def __init__(
+        self, *args: Any, lazy_commands: dict[str, str] | None = None, **kwargs: Any
+    ) -> None:
         super().__init__(*args, **kwargs)
         self._lazy_commands = lazy_commands or {}
 

@@ -197,7 +197,7 @@ class SemanticMasker:
                 parsed = datetime.strptime(original_text.strip(), fmt)
                 shifted = parsed + timedelta(days=shift_days)
                 return shifted.strftime(fmt)
-            except ValueError:  # noqa: PERF203
+            except ValueError:
                 continue
 
         # Could not parse -- return a plausible fake date in the original style.

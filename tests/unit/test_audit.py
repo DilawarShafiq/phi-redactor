@@ -12,18 +12,16 @@ Covers tasks T024-T026 acceptance criteria:
 from __future__ import annotations
 
 import json
-from datetime import datetime, timezone
 from pathlib import Path
 
 import pytest
 
-from phi_redactor.audit.trail import AuditTrail, _GENESIS_HASH
+from phi_redactor.audit.trail import _GENESIS_HASH, AuditTrail
 from phi_redactor.models import (
     DetectionMethod,
     PHICategory,
     RedactionAction,
 )
-
 
 # -----------------------------------------------------------------------
 # Fixtures
@@ -46,7 +44,7 @@ def _log_sample_event(
     action: str = "redacted",
     detection_method: str = "regex",
     text_length: int = 10,
-) -> "AuditEvent":  # noqa: F821
+) -> AuditEvent:  # noqa: F821
     """Helper to log a single sample event."""
     return trail.log_event(
         session_id=session_id,
@@ -175,9 +173,7 @@ class TestVerifyIntegrity:
         fresh_trail = AuditTrail(audit_dir=audit_path)
         assert fresh_trail.verify_integrity() is False
 
-    def test_tampered_hash_field_fails(
-        self, trail: AuditTrail, audit_path: Path
-    ) -> None:
+    def test_tampered_hash_field_fails(self, trail: AuditTrail, audit_path: Path) -> None:
         """Directly editing entry_hash must cause verification failure."""
         _log_sample_event(trail)
         _log_sample_event(trail)
@@ -268,9 +264,7 @@ class TestNoPHIInAudit:
         for jsonl_file in audit_path.glob("*.jsonl"):
             raw = jsonl_file.read_text(encoding="utf-8")
             for phi in phi_strings:
-                assert phi not in raw, (
-                    f"PHI string '{phi}' found in audit file {jsonl_file.name}"
-                )
+                assert phi not in raw, f"PHI string '{phi}' found in audit file {jsonl_file.name}"
 
     def test_event_model_has_no_text_field(self, trail: AuditTrail) -> None:
         """AuditEvent must not expose any field that could hold PHI text."""

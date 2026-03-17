@@ -58,6 +58,7 @@ def cli_command(
     config = ctx.obj.get("config")
     if config is None:
         from phi_redactor.config import PhiRedactorConfig
+
         config = PhiRedactorConfig()
 
     audit_trail = AuditTrail(audit_dir=str(config.audit_path))
@@ -98,6 +99,7 @@ def cli_command(
 
     if output:
         from pathlib import Path
+
         out_path = Path(output).expanduser()
         out_path.parent.mkdir(parents=True, exist_ok=True)
         out_path.write_text(content, encoding="utf-8")
@@ -130,7 +132,9 @@ def _print_human_readable(report: dict, full: bool = False) -> None:
     # Compliance status
     status = report.get("compliance_status", {})
     overall = status.get("overall", "unknown")
-    color = "green" if overall == "compliant" else ("yellow" if overall == "review_needed" else "white")
+    color = (
+        "green" if overall == "compliant" else ("yellow" if overall == "review_needed" else "white")
+    )
     click.echo()
     click.secho(f"Compliance Status: {overall.upper()}", fg=color, bold=True)
     click.echo(f"  {status.get('message', '')}")
@@ -147,7 +151,9 @@ def _print_human_readable(report: dict, full: bool = False) -> None:
         coverage = report["category_coverage"]
         click.echo()
         click.secho("Category Coverage:", bold=True)
-        click.echo(f"  {coverage['categories_covered']}/{coverage['total_categories']} categories ({coverage['coverage_percentage']}%)")
+        click.echo(
+            f"  {coverage['categories_covered']}/{coverage['total_categories']} categories ({coverage['coverage_percentage']}%)"
+        )
 
     if full and "integrity_verification" in report:
         integrity = report["integrity_verification"]

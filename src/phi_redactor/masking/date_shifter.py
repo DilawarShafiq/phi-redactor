@@ -11,7 +11,6 @@ import hashlib
 import re
 from datetime import datetime, timedelta
 
-
 # Supported date formats (ordered by specificity)
 _DATE_FORMATS = [
     "%m/%d/%Y",
@@ -104,7 +103,7 @@ class DateShifter:
         if date_match:
             return self.shift_date(date_match.group())
 
-        return f"[SHIFTED_DATE]"
+        return "[SHIFTED_DATE]"
 
     def shift_age(self, original_age: int) -> int:
         """Shift an age value while preserving its clinical age group.
@@ -135,9 +134,7 @@ class DateShifter:
                 return group_name
         return "unknown"
 
-    def preserves_temporal_order(
-        self, date1: str, date2: str
-    ) -> bool:
+    def preserves_temporal_order(self, date1: str, date2: str) -> bool:
         """Verify that shifting preserves the temporal ordering of two dates.
 
         This is guaranteed by the design (same additive offset), but provided

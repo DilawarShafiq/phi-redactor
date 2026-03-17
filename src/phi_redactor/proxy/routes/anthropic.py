@@ -11,7 +11,8 @@ import json
 import logging
 import time
 import uuid
-from typing import TYPE_CHECKING, AsyncIterator
+from collections.abc import AsyncIterator
+from typing import TYPE_CHECKING
 
 import httpx
 from fastapi import APIRouter, HTTPException, Request
@@ -25,7 +26,6 @@ if TYPE_CHECKING:
     from phi_redactor.audit.trail import AuditTrail
     from phi_redactor.detection.engine import PhiDetectionEngine
     from phi_redactor.masking.semantic import SemanticMasker
-    from phi_redactor.proxy.session import SessionManager
 
 logger = logging.getLogger(__name__)
 
@@ -132,7 +132,13 @@ async def _messages_handler(request: Request) -> StreamingResponse | JSONRespons
     # Detect and mask PHI
     start_time = time.monotonic()
     masked_texts = _detect_and_mask(
-        engine, masker, audit, session_id, request_id, original_texts, sensitivity,
+        engine,
+        masker,
+        audit,
+        session_id,
+        request_id,
+        original_texts,
+        sensitivity,
     )
     processing_ms = (time.monotonic() - start_time) * 1000
 
@@ -283,7 +289,9 @@ async def _handle_streaming(
 
         except httpx.HTTPError as exc:
             logger.error("Upstream Anthropic streaming request failed: %s", exc)
-            error_payload = {"error": {"type": "api_error", "message": "Upstream provider unavailable."}}
+            error_payload = {
+                "error": {"type": "api_error", "message": "Upstream provider unavailable."}
+            }
             yield f"data: {json.dumps(error_payload)}\n\n"
 
     return StreamingResponse(

@@ -1,4 +1,5 @@
 """CLI commands for plugin management."""
+
 from __future__ import annotations
 
 import click

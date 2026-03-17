@@ -23,7 +23,6 @@ from fastapi.testclient import TestClient
 from phi_redactor.config import PhiRedactorConfig
 from phi_redactor.proxy.app import create_app
 
-
 # ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------
@@ -132,9 +131,7 @@ class TestAnthropicMessagesRedactsPhi:
             f"SSN '{phi_ssn}' was not redacted from the upstream request body"
         )
 
-    def test_anthropic_messages_redacts_phi_content_block_array(
-        self, client: TestClient
-    ) -> None:
+    def test_anthropic_messages_redacts_phi_content_block_array(self, client: TestClient) -> None:
         """PHI in content block array format must also be redacted."""
         phi_ssn = "456-78-9012"
 
@@ -172,9 +169,7 @@ class TestAnthropicMessagesRedactsPhi:
 
         # Content is a list of blocks.
         content_blocks = upstream_body["messages"][0]["content"]
-        all_text = " ".join(
-            b.get("text", "") for b in content_blocks if isinstance(b, dict)
-        )
+        all_text = " ".join(b.get("text", "") for b in content_blocks if isinstance(b, dict))
         assert phi_ssn not in all_text
 
 
@@ -364,7 +359,9 @@ class TestAnthropicUpstreamErrorForwarded:
             client.app.state.http_client,
             "post",
             new_callable=AsyncMock,
-            return_value=_make_anthropic_error_response(401, "authentication_error", "Invalid API key"),
+            return_value=_make_anthropic_error_response(
+                401, "authentication_error", "Invalid API key"
+            ),
         ):
             resp = client.post(
                 "/anthropic/v1/messages",
@@ -384,7 +381,9 @@ class TestAnthropicUpstreamErrorForwarded:
             client.app.state.http_client,
             "post",
             new_callable=AsyncMock,
-            return_value=_make_anthropic_error_response(429, "rate_limit_error", "Too many requests"),
+            return_value=_make_anthropic_error_response(
+                429, "rate_limit_error", "Too many requests"
+            ),
         ):
             resp = client.post(
                 "/anthropic/v1/messages",
@@ -451,9 +450,7 @@ class TestAnthropicUpstreamErrorForwarded:
 
 
 class TestAnthropicResponseMetadata:
-    def test_successful_response_contains_phi_redactor_metadata(
-        self, client: TestClient
-    ) -> None:
+    def test_successful_response_contains_phi_redactor_metadata(self, client: TestClient) -> None:
         """A successful proxied response must include x_phi_redactor session metadata."""
         with patch.object(
             client.app.state.http_client,

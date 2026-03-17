@@ -176,9 +176,7 @@ class TestRegistryCoverage:
     def test_no_uncovered_categories(self, registry: HIPAARecognizerRegistry):
         """get_uncovered_categories() should return empty list."""
         uncovered = registry.get_uncovered_categories()
-        assert len(uncovered) == 0, (
-            f"Uncovered categories: {[c.value for c in uncovered]}"
-        )
+        assert len(uncovered) == 0, f"Uncovered categories: {[c.value for c in uncovered]}"
 
 
 # ---------------------------------------------------------------------------
@@ -240,9 +238,7 @@ class TestDetectionBenchmark:
             len(detections),
             elapsed_ms,
         )
-        assert elapsed_ms < 10_000, (
-            f"Detection took {elapsed_ms:.1f}ms, exceeding 10s budget"
-        )
+        assert elapsed_ms < 10_000, f"Detection took {elapsed_ms:.1f}ms, exceeding 10s budget"
 
     def test_precision_recall_per_category(self, engine: PhiDetectionEngine):
         """Log precision and recall metrics per category.
@@ -283,8 +279,7 @@ class TestDetectionBenchmark:
             total_expected += len(expected)
 
             logger.info(
-                "Category %-20s: detected=%d, expected=%d, TP=%d, "
-                "precision=%.2f, recall=%.2f",
+                "Category %-20s: detected=%d, expected=%d, TP=%d, precision=%.2f, recall=%.2f",
                 category.value,
                 len(detected),
                 len(expected),
@@ -323,6 +318,5 @@ class TestDetectionBenchmark:
         # All scores should be in valid range
         for d in detections:
             assert 0.0 <= d.confidence <= 1.0, (
-                f"Invalid confidence {d.confidence} for {d.category}: "
-                f"'{d.original_text}'"
+                f"Invalid confidence {d.confidence} for {d.category}: '{d.original_text}'"
             )

@@ -32,7 +32,6 @@ pytestmark = pytest.mark.skipif(
 from phi_redactor.detection import PhiDetectionEngine
 from phi_redactor.models import PHICategory, PHIDetection
 
-
 # ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------
@@ -72,9 +71,7 @@ class TestPersonNameDetection:
         text = "The patient was referred by Dr. Maria Garcia for evaluation."
         detections = engine.detect(text)
 
-        person_detections = [
-            d for d in detections if d.category == PHICategory.PERSON_NAME
-        ]
+        person_detections = [d for d in detections if d.category == PHICategory.PERSON_NAME]
         assert len(person_detections) >= 1, (
             f"Expected at least one PERSON_NAME detection, got {len(person_detections)}. "
             f"All detections: {detections}"
@@ -91,9 +88,7 @@ class TestPersonNameDetection:
         text = "Patient John Smith presented to the emergency department."
         detections = engine.detect(text)
 
-        person_detections = [
-            d for d in detections if d.category == PHICategory.PERSON_NAME
-        ]
+        person_detections = [d for d in detections if d.category == PHICategory.PERSON_NAME]
         assert len(person_detections) >= 1, (
             f"Expected PERSON_NAME detection for 'John Smith', got: {detections}"
         )
@@ -135,9 +130,7 @@ class TestPhoneDetection:
         text = "Contact the patient at (555) 123-4567 for follow-up."
         detections = engine.detect(text)
 
-        phone_detections = [
-            d for d in detections if d.category == PHICategory.PHONE_NUMBER
-        ]
+        phone_detections = [d for d in detections if d.category == PHICategory.PHONE_NUMBER]
         assert len(phone_detections) >= 1, (
             f"Expected PHONE_NUMBER detection for '(555) 123-4567', got: {detections}"
         )
@@ -156,16 +149,11 @@ class TestEmailDetection:
         text = "Send records to john.smith@email.com per patient request."
         detections = engine.detect(text)
 
-        email_detections = [
-            d for d in detections if d.category == PHICategory.EMAIL_ADDRESS
-        ]
+        email_detections = [d for d in detections if d.category == PHICategory.EMAIL_ADDRESS]
         assert len(email_detections) >= 1, (
-            f"Expected EMAIL_ADDRESS detection for 'john.smith@email.com', "
-            f"got: {detections}"
+            f"Expected EMAIL_ADDRESS detection for 'john.smith@email.com', got: {detections}"
         )
-        assert any(
-            "john.smith@email.com" in d.original_text for d in email_detections
-        )
+        assert any("john.smith@email.com" in d.original_text for d in email_detections)
 
 
 # ---------------------------------------------------------------------------
@@ -195,15 +183,11 @@ class TestDateDetection:
 class TestEdgeCases:
     """Tests for empty text, whitespace-only, and other edge cases."""
 
-    def test_empty_text_returns_empty_list(
-        self, engine: PhiDetectionEngine
-    ) -> None:
+    def test_empty_text_returns_empty_list(self, engine: PhiDetectionEngine) -> None:
         """Empty string should return an empty detection list."""
         assert engine.detect("") == []
 
-    def test_whitespace_only_returns_empty_list(
-        self, engine: PhiDetectionEngine
-    ) -> None:
+    def test_whitespace_only_returns_empty_list(self, engine: PhiDetectionEngine) -> None:
         """Whitespace-only string should return an empty detection list."""
         assert engine.detect("   \n\t  ") == []
 
@@ -216,8 +200,7 @@ class TestEdgeCases:
         detections = engine.detect(text)
         # There may be a few false positives, but not many
         assert len(detections) < 5, (
-            f"Expected very few detections for PHI-free text, got {len(detections)}: "
-            f"{detections}"
+            f"Expected very few detections for PHI-free text, got {len(detections)}: {detections}"
         )
 
 
@@ -244,9 +227,7 @@ class TestConfidenceScores:
                 f"{detection.category}: '{detection.original_text}'"
             )
 
-    def test_detections_are_phi_detection_instances(
-        self, engine: PhiDetectionEngine
-    ) -> None:
+    def test_detections_are_phi_detection_instances(self, engine: PhiDetectionEngine) -> None:
         """All results should be PHIDetection model instances."""
         text = "Patient John Smith, SSN 456-78-9012."
         detections = engine.detect(text)
@@ -302,9 +283,7 @@ class TestSensitivityParameter:
             f"low={len(low_detections)}, normal={len(normal_detections)}"
         )
 
-    def test_per_call_sensitivity_override(
-        self, engine: PhiDetectionEngine
-    ) -> None:
+    def test_per_call_sensitivity_override(self, engine: PhiDetectionEngine) -> None:
         """Passing sensitivity to detect() should override the engine default."""
         text = (
             "Patient John Smith, SSN 456-78-9012, phone (555) 123-4567, "
@@ -335,20 +314,16 @@ class TestSensitivityParameter:
 class TestDetectionOrdering:
     """Tests that detections are returned in a stable, position-based order."""
 
-    def test_detections_sorted_by_position(
-        self, engine: PhiDetectionEngine
-    ) -> None:
+    def test_detections_sorted_by_position(self, engine: PhiDetectionEngine) -> None:
         """Detections should be sorted by start position (ascending)."""
         text = (
-            "Patient John Smith, SSN 456-78-9012, "
-            "email john.smith@email.com, phone (555) 123-4567."
+            "Patient John Smith, SSN 456-78-9012, email john.smith@email.com, phone (555) 123-4567."
         )
         detections = engine.detect(text)
         if len(detections) >= 2:
             for i in range(len(detections) - 1):
                 assert detections[i].start <= detections[i + 1].start, (
-                    f"Detections not sorted by position: "
-                    f"{detections[i]} vs {detections[i + 1]}"
+                    f"Detections not sorted by position: {detections[i]} vs {detections[i + 1]}"
                 )
 
 

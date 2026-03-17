@@ -1,4 +1,5 @@
 """Plugin loader for extensible PHI detection."""
+
 from __future__ import annotations
 
 import importlib
@@ -73,11 +74,7 @@ class PluginLoader:
             from importlib.metadata import entry_points
 
             eps = entry_points()
-            plugin_eps = (
-                eps.get(group, [])
-                if isinstance(eps, dict)
-                else eps.select(group=group)
-            )
+            plugin_eps = eps.get(group, []) if isinstance(eps, dict) else eps.select(group=group)
             for ep in plugin_eps:
                 try:
                     plugin = ep.load()
@@ -100,7 +97,5 @@ class PluginLoader:
             try:
                 recognizers.extend(plugin.get_recognizers())
             except Exception:
-                logger.exception(
-                    "Failed to get recognizers from plugin %s", plugin.name
-                )
+                logger.exception("Failed to get recognizers from plugin %s", plugin.name)
         return recognizers

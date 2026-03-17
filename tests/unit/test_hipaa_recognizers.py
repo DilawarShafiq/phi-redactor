@@ -24,7 +24,6 @@ from phi_redactor.detection.recognizers.license import LicenseRecognizer
 from phi_redactor.detection.recognizers.mrn import MRNRecognizer
 from phi_redactor.detection.recognizers.vehicle import VehicleRecognizer
 
-
 # ---------------------------------------------------------------------------
 # Helper: build a minimal Presidio AnalyzerEngine with a single recognizer
 # ---------------------------------------------------------------------------
@@ -339,11 +338,7 @@ class TestVehicleRecognizer:
         text = "VIN: 1HGBH41IXON109186 on the record."
         results = _detect_entities(self.analyzer, text, [self.entity])
         # The I and O should prevent the 17-char VIN pattern from matching
-        vin_matches = [
-            r
-            for r in results
-            if r.score >= 0.7 and (r.end - r.start) == 17
-        ]
+        vin_matches = [r for r in results if r.score >= 0.7 and (r.end - r.start) == 17]
         assert len(vin_matches) == 0
 
 

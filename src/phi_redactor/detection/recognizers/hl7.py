@@ -1,4 +1,5 @@
 """HL7v2 segment recognizer for PHI detection."""
+
 from __future__ import annotations
 
 from presidio_analyzer import Pattern, PatternRecognizer

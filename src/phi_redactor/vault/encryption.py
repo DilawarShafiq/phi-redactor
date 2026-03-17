@@ -16,7 +16,6 @@ from cryptography.fernet import Fernet, MultiFernet
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 
-
 _PBKDF2_ITERATIONS = 480_000
 _SALT_LENGTH = 16
 

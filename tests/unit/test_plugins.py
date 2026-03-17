@@ -1,9 +1,8 @@
 """Unit tests for the plugin system."""
+
 from __future__ import annotations
 
 from pathlib import Path
-
-import pytest
 
 from phi_redactor.plugins.loader import PluginLoader
 
@@ -41,17 +40,17 @@ class TestPluginLoader:
         """Test loading a plugin from a directory of .py files."""
         plugin_file = tmp_dir / "test_plug.py"
         plugin_file.write_text(
-            'from dataclasses import dataclass\n'
-            'from presidio_analyzer import PatternRecognizer\n'
-            '\n'
-            '@dataclass\n'
-            'class _P:\n'
+            "from dataclasses import dataclass\n"
+            "from presidio_analyzer import PatternRecognizer\n"
+            "\n"
+            "@dataclass\n"
+            "class _P:\n"
             '    name: str = "dir-plugin"\n'
             '    version: str = "0.0.1"\n'
-            '    def get_recognizers(self) -> list[PatternRecognizer]:\n'
-            '        return []\n'
-            '\n'
-            'plugin = _P()\n'
+            "    def get_recognizers(self) -> list[PatternRecognizer]:\n"
+            "        return []\n"
+            "\n"
+            "plugin = _P()\n"
         )
         loader = PluginLoader()
         loader.load_from_directory(tmp_dir)

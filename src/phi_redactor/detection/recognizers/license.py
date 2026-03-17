@@ -12,8 +12,7 @@ Entity type: ``LICENSE_NUMBER``
 
 from __future__ import annotations
 
-from presidio_analyzer import Pattern, PatternRecognizer
-from presidio_analyzer import RecognizerResult
+from presidio_analyzer import Pattern, PatternRecognizer, RecognizerResult
 
 
 class LicenseRecognizer(PatternRecognizer):
