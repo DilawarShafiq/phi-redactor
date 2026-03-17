@@ -15,6 +15,7 @@ Usage::
 from __future__ import annotations
 
 import logging
+import os
 import subprocess
 import sys
 from typing import TYPE_CHECKING
@@ -33,7 +34,7 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
-_SPACY_MODEL = "en_core_web_lg"
+_SPACY_MODEL = os.environ.get("PHI_REDACTOR_SPACY_MODEL", "en_core_web_lg")
 
 
 class PhiDetectionEngine:
