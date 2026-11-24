@@ -41,3 +41,12 @@ vault.key
 
 # spaCy models (large, download at runtime)
 en_core_web_lg*/
+# Local build notes, specs and AI settings (not part of the public product)
+.claude/
+.specify/
+specs/
+history/
+CLAUDE.md
+PROGRESS.md
+ROADMAP.md
+demo/
